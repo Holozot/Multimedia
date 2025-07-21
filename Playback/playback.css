@@ -1,0 +1,296 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+.video-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 75%; /* 4:3 Aspect Ratio (3/4 * 100%) */
+    background-color: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.video-wrapper video, .video-wrapper canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Use 'contain' to ensure video fits without cropping */
+    border-radius: 10px;
+}
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+}
+.btn {
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-primary {
+    background-color: #4f46e5;
+    color: white;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #4338ca;
+    transform: translateY(-2px);
+}
+.btn-secondary {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    border: 1px solid #4f46e5;
+}
+.btn-secondary:hover {
+    background-color: #c7d2fe;
+    transform: translateY(-2px);
+}
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+.recording-indicator {
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    border-radius: 50%;
+    display: none; /* Hidden by default */
+    animation: pulse 1s infinite alternate;
+}
+.recording-indicator.active {
+    display: block;
+}
+@keyframes pulse {
+    from { opacity: 1; }
+    to { opacity: 0.5; }
+}
+.message-box {
+    background-color: #fff3cd;
+    color: #664d03;
+    border: 1px solid #ffecb5;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    display: none;
+    text-align: center;
+}
+.message-box.active {
+    display: block;
+}
+
+/* Custom Playback Controls Styling */
+.custom-controls-overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none; /* Allows clicks to pass through by default */
+}
+
+.video-wrapper:hover .custom-controls-overlay,
+.custom-controls-overlay.active { /* 'active' class can be added by JS for persistent display */
+    opacity: 1;
+    pointer-events: auto; /* Enables interaction when visible */
+}
+
+.playback-controls {
+    /* Styles for the bottom control bar */
+    background-color: rgba(0, 0, 0, 0.8); /* Darker for better visibility */
+    padding: 10px 15px;
+    border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.playback-btn {
+    width: 45px; /* Smaller circular buttons */
+    height: 45px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3); /* More opaque white for better visibility */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Stronger border for visibility */
+    color: white; /* Icon color */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+}
+
+.playback-btn:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-1px);
+}
+
+.playback-btn:disabled {
+    opacity: 0.5; /* Slightly less opaque when disabled */
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    background-color: rgba(255, 255, 255, 0.15); /* Keep a subtle background when disabled */
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.playback-btn svg {
+    width: 28px; /* Slightly larger icon for better visibility */
+    height: 28px;
+    color: white;
+}
+
+/* Play/Pause specific icons in bottom bar */
+.play-pause-btn .play-icon {
+    display: block; /* Show play icon by default */
+}
+.play-pause-btn .pause-icon {
+    display: none; /* Hide pause icon by default */
+}
+.play-pause-btn.paused .play-icon {
+    display: block; /* Show play icon when paused */
+}
+.play-pause-btn.paused .pause-icon {
+    display: none; /* Hide pause icon when paused */
+}
+.play-pause-btn.playing .play-icon {
+    display: none; /* Hide play icon when playing */
+}
+.play-pause-btn.playing .pause-icon {
+    display: block; /* Show pause icon when playing */
+}
+
+.time-skip {
+    position: absolute;
+    font-size: 12px; /* Larger text for skip amount */
+    font-weight: bold;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.8); /* Darker background for readability */
+    border-radius: 4px;
+    padding: 2px 5px;
+    pointer-events: none;
+    z-index: 2;
+    bottom: -10px; /* Position further below the icon */
+    transform: translateX(-50%);
+    left: 50%;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 255, 255, 0.4); /* Add a subtle border for contrast */
+}
+
+/* Progress Bar Styling */
+.progress-container {
+    padding: 0 5px;
+}
+
+#progressBar {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px; /* Thicker progress bar */
+    background: rgba(255, 255, 255, 0.5); /* More visible background */
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#progressBar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px; /* Larger thumb */
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5; /* Primary color for thumb */
+    cursor: grab; /* Indicate draggable */
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5); /* Stronger shadow */
+    margin-top: -5px; /* Adjust thumb position */
+    border: 2px solid white; /* White border for contrast */
+}
+
+#progressBar::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: grab;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    border: 2px solid white;
+}
+
+#progressBar:hover {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+/* Volume Slider Styling */
+#volumeSlider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px; /* Thicker volume slider */
+    background: rgba(255, 255, 255, 0.5); /* More visible background */
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; /* Larger thumb */
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    cursor: grab;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    margin-top: -5px;
+    border: 1px solid rgba(0, 0, 0, 0.3); /* Subtle border */
+}
+
+#volumeSlider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    cursor: grab;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (min-width: 640px) {
+    .video-section {
+        flex-direction: row;
+    }
+    .video-wrapper {
+        flex: 1;
+        padding-bottom: 300px; /* Fixed height for two videos side-by-side */
+    }
+}
