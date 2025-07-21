@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Recorder</title>
+    <!-- Link to Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to Google Fonts for Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Link to your custom CSS file -->
+    <link rel="stylesheet" href="playback.css">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">Webcam & Audio Recorder</h1>
+
+        <div class="video-section">
+            <div class="flex flex-col items-center gap-2 flex-1">
+                <h2 class="text-xl font-semibold text-gray-700">Live Preview</h2>
+                <div class="video-wrapper">
+                    <video id="previewVideo" autoplay muted playsinline class="rounded-lg"></video>
+                    <div id="recordingIndicator" class="recording-indicator absolute top-3 right-3"></div>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center gap-2 flex-1">
+                <h2 class="text-xl font-semibold text-gray-700">Recorded Playback</h2>
+                <div class="video-wrapper">
+                    <!-- Removed 'controls' attribute to implement custom controls -->
+                    <video id="playbackVideo" playsinline class="rounded-lg"></video>
+                    <canvas id="timestampCanvas" class="absolute top-0 left-0 pointer-events-none hidden"></canvas>
+
+                    <!-- Custom Controls Overlay -->
+                    <div class="custom-controls-overlay absolute inset-0 flex flex-col justify-end p-4 bg-gradient-to-t from-black/70 to-transparent">
+                        <!-- Progress Bar -->
+                        <div class="progress-container mb-2">
+                            <input type="range" id="progressBar" value="0" min="0" max="100" step="0.01" class="w-full">
+                            <div class="time-display flex justify-between text-white text-sm mt-1">
+                                <span id="currentTime">00:00</span>
+                                <span id="duration">00:00</span>
+                            </div>
+                        </div>
+
+                        <!-- Main Playback Controls -->
+                        <div class="playback-controls flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+
+                                <!-- Rewind Button -->
+                                <button id="rewindButton" class="playback-btn" disabled>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                                        <path d="M20 6L11.5 12 20 18V6zm-9 0L2.5 12 11 18V6z"/>
+                                    </svg>
+                                    <span class="time-skip">-5</span>
+                                </button>
+
+                                <!-- Play/Pause Button -->
+                                <button id="playPauseButton" class="playback-btn play-pause-btn" disabled>
+                                    <svg class="play-icon active" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 20.99A3.75 3.75 0 014.5 17.347V5.653z" clip-rule="evenodd" />
+                                    </svg>
+                                    <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0a.75.75 0 01.75-.75h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75h-1.5a.75.75 0 01-.75-.75V5.25z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <!-- Forward Button (Updated Icon) -->
+                                <button id="forwardButton" class="playback-btn" disabled>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="40" height="40">
+                                        <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/>
+                                    </svg>
+                                    <span class="time-skip">+5</span>
+                                </button>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <!-- Volume Control (Updated Icons) -->
+                                <div class="volume-control flex items-center gap-2">
+                                    <button id="volumeButton" class="playback-btn !w-10 !h-10" disabled>
+                                        <svg id="volumeHighIcon" class="volume-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5L6 9H3v6h3l5 4V5z M15.54 8.46a5 5 0 010 7.07M17.66 6.34a8 8 0 010 11.32" />
+                                        </svg>
+
+                                        <svg id="volumeMuteIcon" class="volume-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                d="M9 5L4 9H1v6h3l5 4V5z M15 9l6 6M21 9l-6 6" />
+                                        </svg>
+
+                                    </button>
+                                    <input type="range" id="volumeSlider" value="100" min="0" max="100" class="w-20" disabled>
+                                </div>
+
+                                <!-- Fullscreen Button -->
+                                <button id="fullscreenButton" class="playback-btn !w-10 !h-10" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 3H5a2 2 0 00-2 2v3m13-5h3a2 2 0 012 2v3m0 8v3a2 2 0 01-2 2h-3m-8 0H5a2 2 0 01-2-2v-3" />
+                                    </svg>
+                                </button>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="startButton" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                Start Recording
+            </button>
+            <button id="stopButton" class="btn btn-primary" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clip-rule="evenodd" />
+                </svg>
+                Stop Recording
+            </button>
+            <button id="downloadButton" class="btn btn-primary" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v12" />
+                </svg>
+                Download Recording
+            </button>
+
+            <button id="toggleTimestampButton" class="btn btn-secondary" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l3 3a1 1 0 001.414-1.414L11 9.586V6z" clip-rule="evenodd" />
+                </svg>
+                Toggle Timestamp
+            </button>
+
+            <!-- Upload Music Button -->
+            <button id="uploadMusicButton" class="btn btn-secondary">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L6.293 6.707z" clip-rule="evenodd" />
+                </svg>
+                Upload Music
+            </button>
+            <input type="file" id="musicFileInput" accept="audio/*" class="hidden">
+
+            <button id="toggleMusicButton" class="btn btn-secondary" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M18 3a1 1 0 00-1.447-.894L11 6V3a1 1 0 00-2 0v10.586l-3.293-3.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0l5-5A1 1 0 0018 10V3z" />
+                </svg>
+                Play Music
+            </button>
+        </div>
+
+        <div id="messageBox" class="message-box"></div>
+
+        <audio id="backgroundMusic" loop>
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <!-- Link to your custom JavaScript file -->
+    <script src="playback.js"></script>
+</body>
+</html>
